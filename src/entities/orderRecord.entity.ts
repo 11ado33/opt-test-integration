@@ -1,6 +1,22 @@
-import { Entity, ObjectID, ObjectIdColumn } from "typeorm"
+import { Column, CreateDateColumn, Entity, ObjectID, ObjectIdColumn, PrimaryColumn, UpdateDateColumn } from 'typeorm'
 
-@Entity()
+export enum OrderState {
+  NEW = 'new',
+  FINISHED = 'finished'
+}
+
+@Entity('orders')
 export class OrderRecord {
-	@ObjectIdColumn() id: ObjectID
+  @ObjectIdColumn() _id: ObjectID
+
+  @PrimaryColumn() OrderID!: string
+
+
+  @Column() State!: string
+
+  @CreateDateColumn({ type: 'timestamp' })
+  public createdAt: Date
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  public updatedAt: Date
 }
