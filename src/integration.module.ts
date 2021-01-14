@@ -3,7 +3,7 @@ import { IntegrationController } from './integration.controller'
 import { IntegrationService } from './integration.service'
 import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { getTypeORMConfig } from './config/typeOrmCOnfig'
+import { getTypeORMConfig } from './config/typeOrmConfig'
 import { PollingService } from './polling.service'
 
 @Module({
