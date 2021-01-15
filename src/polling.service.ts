@@ -4,6 +4,23 @@ import { OrderRecord, OrderState } from './entities/orderRecord.entity'
 import axios, { AxiosResponse } from 'axios'
 import { Order } from './dto/response/opTigerApi/Order'
 
+async function notifyPartner(openOrder, orderUpdate: Order) {
+  const partner_res = await axios(process.env.EP_PARTNER_ORDER_UPDATE + `/api/orders/${orderUpdate.OrderId}`, {
+    method: 'PATCH',
+    headers: {
+      'X-API-KEY': process.env.PARTNER_KEY_OUTBOUND,
+    },
+    data: {
+      state: orderUpdate.State,
+    },
+  }).catch(console.error)
+  if (partner_res) {
+    console.info('Save to DB')
+    const orderToSave = { ...openOrder, ...orderUpdate }
+    await getManager().getRepository(OrderRecord).update(openOrder._id, orderToSave)
+  }
+}
+
 @Injectable()
 export class PollingService {
 
@@ -27,20 +44,7 @@ export class PollingService {
         const orderUpdate = res.data as Order
         if (orderUpdate.State.toLowerCase() == OrderState.FINISHED) {
           console.info('Notify partner')
-          const partner_res = await axios(process.env.EP_PARTNER_ORDER_UPDATE + `/api/orders/${orderUpdate.OrderId}`, {
-            method: 'PATCH',
-            headers: {
-              'X-API-KEY': process.env.PARTNER_KEY_OUTBOUND,
-            },
-            data: {
-              state: orderUpdate.State,
-            },
-          }).catch(console.error)
-          if (partner_res) {
-            console.info('Save to DB')
-            const orderToSave = { ...o, ...orderUpdate }
-            await getManager().getRepository(OrderRecord).update(o._id, orderToSave)
-          }
+          await notifyPartner(o, orderUpdate)
         }
       }
     })
